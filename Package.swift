@@ -9,7 +9,7 @@ let package = Package(
         .iOS(.v13)
     ],
     products: [
-        .library(name: "___PRODUCT___",targets: ["___PRODUCT___"])
+        .library(name: "___PRODUCT___", targets: ["___PRODUCT___"])
     ],
     dependencies: [
        .package(url: "https://github.com/4d-for-ios/QMobileUI.git", .revision("HEAD"))
