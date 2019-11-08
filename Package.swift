@@ -12,7 +12,7 @@ let package = Package(
         .library(name: "___PRODUCT___",targets: ["___PRODUCT___"])
     ],
     dependencies: [
-       .package(url: "https://github.com/quatreios/QMobileUI.git", .revision("HEAD"))
+       .package(url: "https://github.com/4d-for-ios/QMobileUI.git", .revision("HEAD"))
     ],
     targets: [
         .target(name: "___PRODUCT___", dependencies: ["QMobileUI"], path: "Sources")
