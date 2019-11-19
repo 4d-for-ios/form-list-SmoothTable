@@ -6,6 +6,7 @@ import PackageDescription
 let package = Package(
     name: "4d-for-ios-form-list-SmoothTable",
     platforms: [
+        .macOS(.v10_14),
         .iOS(.v13)
     ],
     products: [
