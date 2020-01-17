@@ -1,48 +1,24 @@
-name: Upload artifact
+name: 🚀 release
 on: 
   release:
     types: [published]
 jobs:
   publish:
     name: Publish
-    runs-on: macOS-latest
+    runs-on: macos-latest
+    env:
+      RELEASE_REPO: "https://raw.githubusercontent.com/4d-for-ios/check-workflow/master/form/scripts"
     steps:
       - name: ⬇️ Checkout
         uses: actions/checkout@master
       - name: 📝 Edit manifest
         run: |
-          echo "Edit manifest to release and repository metadata"
-          GITHUB_URL="https://github.com/$GITHUB_REPOSITORY"
-          echo "➕ home page: $GITHUB_URL"
-          cat <<< "$(jq ".homepage = \"$GITHUB_URL\"" < manifest.json)" > manifest.json
-          REPOSITORY_NAME=$(jq --raw-output '.repository.name' $GITHUB_EVENT_PATH)
-          DOWNLOAD_URL="$GITHUB_URL/releases/latest/download/$REPOSITORY_NAME.zip"
-          echo "➕update url: $DOWNLOAD_URL"
-          cat <<< "$(jq ".updateURL = \"$DOWNLOAD_URL\"" < manifest.json)" > manifest.json
-          RELEASE_TAG=$(jq --raw-output '.release.tag_name' $GITHUB_EVENT_PATH)
-          echo "➕ tag: $RELEASE_TAG"
-          cat <<< "$(jq ".version = \"$RELEASE_TAG\"" < manifest.json)" > manifest.json
-
-          jq -s '.[0] * .[1]' manifest.json $GITHUB_EVENT_PATH > manifest.merged.json
-          rm manifest.json
-          mv manifest.merged.json manifest.json
+          curl -fsSL $RELEASE_REPO/release_manifest.sh | bash -s $GITHUB_REPOSITORY $GITHUB_EVENT_PATH
       - name: 📦 Build archive
         run: |
-          REPOSITORY_NAME=$(jq --raw-output '.repository.name' $GITHUB_EVENT_PATH)
-          zip -r $REPOSITORY_NAME.zip .  -x ".*" -x "__MACOSX"
+          curl -fsSL $RELEASE_REPO/release_archive.sh | bash -s $GITHUB_EVENT_PATH
       - name: ⬆️ Upload to Release
         run: |
-          REPOSITORY_NAME=$(jq --raw-output '.repository.name' $GITHUB_EVENT_PATH)
-          ARTIFACT=./$REPOSITORY_NAME.zip
-          AUTH_HEADER="Authorization: token $GITHUB_TOKEN"
-          CONTENT_LENGTH_HEADER="Content-Length: $(stat -f%z "$ARTIFACT")"
-          CONTENT_TYPE_HEADER="Content-Type: application/zip"
-          RELEASE_ID=$(jq --raw-output '.release.id' $GITHUB_EVENT_PATH)
-          FILENAME=$(basename $ARTIFACT)
-          UPLOAD_URL="https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets?name=$FILENAME"
-          echo "$UPLOAD_URL"
-          curl -sSL -XPOST \
-            -H "$AUTH_HEADER" -H "$CONTENT_LENGTH_HEADER" -H "$CONTENT_TYPE_HEADER" \
-            --upload-file "$ARTIFACT" "$UPLOAD_URL"
+          curl -fsSL $RELEASE_REPO/release_upload.sh | bash -s $GITHUB_EVENT_PATH $GITHUB_TOKEN
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
