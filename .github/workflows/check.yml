@@ -11,24 +11,36 @@ jobs:
           fetch-depth: 1
       - name: ⚙️ Install swiftlint
         run: |
-          brew install swiftlint
+          if [ -z "$(which swiftlint)" ]; then
+            brew install swiftlint
+          else
+            swiftlint version  
+          fi
         env:
           HOMEBREW_NO_INSTALL_CLEANUP: 1
-      - name: 🧹 Code Lint
+      - name: 🧹 iOS Code Lint
         run: |
+          cd ios
           if [ ! -f ".swiftlint.yml" ]; then
-            curl -L https://raw.githubusercontent.com/4d-for-ios/check-workflow/master/form/quality/.swiftlint.yml --output .swiftlint.yml
+            curl -L https://raw.githubusercontent.com/4d-for-mobile/check-workflow/master/form/quality/.swiftlint.yml --output .swiftlint.yml
           fi
           swiftlint --strict
       - name: ⚙️ Install iblinter
         run: |
-          brew install IBDecodable/homebrew-tap/iblinter
+          set -x
+          if [ -z "$(which iblinter)" ]; then
+            brew install iblinter
+          else
+            iblinter version  
+          fi
+          exit 0
         env:
           HOMEBREW_NO_INSTALL_CLEANUP: 1
-      - name: 🧹 Storyboard Lint
+      - name: 🧹 iOS Storyboard Lint
         run: |
+          cd ios
           if [ ! -f ".iblinter.yml" ]; then
-            curl -L https://raw.githubusercontent.com/4d-for-ios/check-workflow/master/form/quality/.iblinter.yml --output .iblinter.yml
+            curl -L https://raw.githubusercontent.com/4d-for-mobile/check-workflow/master/form/quality/.iblinter.yml --output .iblinter.yml
           fi
           iblinter lint
       - name: ⚙️ Install jsonlint
@@ -41,12 +53,13 @@ jobs:
     name: 🏗 build
     runs-on: macos-latest
     env:
-      RELEASE_REPO: "https://raw.githubusercontent.com/4d-for-ios/check-workflow/master"
+      RELEASE_REPO: "https://raw.githubusercontent.com/4d-for-mobile/check-workflow/master"
     steps:
       - name: ⬇️ Checkout
         uses: actions/checkout@master
         with:
           fetch-depth: 1
-      - name: 👷 Swift build
+      - name: 👷 iOS build
         run: |
+          cd ios
           curl -fsSL $RELEASE_REPO/form/scripts/swift_build.sh | bash -s
